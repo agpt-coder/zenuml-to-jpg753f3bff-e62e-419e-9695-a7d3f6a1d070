@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "zenuml-to-jpg"
+version = "0.1.0"
+description = "The project will involve creating an application capable of taking ZenUML code as an input, converting this input into a visual diagram, and subsequently allowing users to download the resulting diagram as a JPEG file. Utilizing the discussed technology stack, the project will be constructed as follows:"
+authors = ["AutoGPT <info@agpt.co>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11"
+bcrypt = "*"
+fastapi = "^0.79.0"
+graphviz = "^0.17"
+passlib = {version = "*", extras = ["bcrypt"]}
+prisma = "*"
+pydantic = "*"
+python-jose = {version = "*", extras = ["cryptography"]}
+uvicorn = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

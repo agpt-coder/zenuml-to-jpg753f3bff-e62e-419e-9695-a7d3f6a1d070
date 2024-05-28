@@ -1,0 +1,79 @@
+// datasource db defines the database connection settings.
+// It is configured for PostgreSQL and uses an environment variable for the connection URL.
+// The 'extensions' feature enables the use of PostgreSQL-specific data types.
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+}
+
+// generator db configures Prisma Client settings.
+// It is set up to use Prisma Client Python with asyncio interface and specific features.
+generator db {
+  provider             = "prisma-client-py"
+  interface            = "asyncio"
+  recursive_type_depth = 5
+  previewFeatures      = ["postgresqlExtensions"]
+}
+
+model User {
+  id                       String                     @id @default(dbgenerated("gen_random_uuid()"))
+  email                    String                     @unique
+  hashedPassword           String
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  lastLogin                DateTime?
+  role                     Role                       @default(USER)
+  diagrams                 Diagram[]
+  collaborationSessions    CollaborationSession[]
+  Collaboration            Collaboration[]
+  CollaborationParticipant CollaborationParticipant[]
+}
+
+model Diagram {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()"))
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  title                String
+  zenUMLCode           String
+  image                Bytes?
+  userId               String
+  user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collaborations       Collaboration[]
+  CollaborationSession CollaborationSession[]
+}
+
+model Collaboration {
+  id           String   @id @default(dbgenerated("gen_random_uuid()"))
+  diagramId    String
+  userId       String
+  createdAt    DateTime @default(now())
+  diagram      Diagram  @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+  collaborator User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CollaborationSession {
+  id           String                     @id @default(dbgenerated("gen_random_uuid()"))
+  diagramId    String
+  userId       String
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+  diagram      Diagram                    @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+  participants CollaborationParticipant[]
+  User         User                       @relation(fields: [userId], references: [id])
+}
+
+model CollaborationParticipant {
+  sessionId            String
+  userId               String
+  joinedAt             DateTime             @default(now())
+  collaborationSession CollaborationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  participant          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, userId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
