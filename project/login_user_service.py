@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import os
 
 import prisma
 import prisma.models
@@ -19,7 +20,7 @@ class LoginUserResponse(BaseModel):
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-SECRET_KEY = "a_very_secret_key_that_you_should_change"
+SECRET_KEY = os.getenv("SECRET_KEY", "fallback_secret_key")
 
 ALGORITHM = "HS256"
 

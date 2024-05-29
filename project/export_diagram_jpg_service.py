@@ -2,6 +2,7 @@ import prisma
 import prisma.models
 from fastapi import HTTPException
 from pydantic import BaseModel
+import os
 
 
 class ExportDiagramJPGResponse(BaseModel):
@@ -35,17 +36,18 @@ async def export_diagram_jpg(diagramId: str) -> ExportDiagramJPGResponse:
     """
     diagram = await prisma.models.Diagram.prisma().find_unique(where={"id": diagramId})
     if diagram is None:
-        raise HTTPException(status_code=404, detail="prisma.models.Diagram not found.")
+        raise HTTPException(status_code=404, detail="Diagram not found.")
     if diagram.image is None:
         raise HTTPException(
-            status_code=404, detail="prisma.models.Diagram image not available."
+            status_code=404, detail="Diagram image not available."
         )
-    filename = f"{diagramId}.jpg"
-    download_url = f"http://example.com/downloads/{filename}"
+    # Dynamically generate the download URL based on environment variables
+    base_url = os.getenv("DIAGRAM_STORAGE_BASE_URL", "http://localhost:8000")
+    download_url = f"{base_url}/downloads/{diagramId}.jpg"
     file_size = len(diagram.image)
     return ExportDiagramJPGResponse(
         status="success",
-        message="prisma.models.Diagram successfully exported to JPG format.",
+        message="Diagram successfully exported to JPG format.",
         download_url=download_url,
         file_size=file_size,
         content_type="image/jpeg",
