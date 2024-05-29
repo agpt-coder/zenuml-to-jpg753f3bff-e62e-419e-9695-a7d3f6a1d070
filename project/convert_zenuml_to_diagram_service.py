@@ -5,7 +5,7 @@ import prisma
 import prisma.models
 from graphviz import Digraph
 from pydantic import BaseModel
-
+from fastapi import Request
 
 class ConvertZenUMLToDiagramResponse(BaseModel):
     """
@@ -18,7 +18,7 @@ class ConvertZenUMLToDiagramResponse(BaseModel):
     diagram_id: str
 
 
-async def convert_zenuml_to_diagram(zenUML_code: str) -> ConvertZenUMLToDiagramResponse:
+async def convert_zenuml_to_diagram(request: Request, zenUML_code: str) -> ConvertZenUMLToDiagramResponse:
     """
     Converts ZenUML code provided by the user into a diagram.
 
@@ -34,6 +34,7 @@ async def convert_zenuml_to_diagram(zenUML_code: str) -> ConvertZenUMLToDiagramR
     ConvertZenUMLToDiagramResponse: The output model for the diagram conversion process, which includes either a success status and the diagram data or an error message.
     """
     try:
+        user_id = request.state.user.id
         components, relations = parse_zenuml_code(zenUML_code)
         dot = Digraph(comment="ZenUML Diagram")
         for comp in components:
@@ -49,7 +50,7 @@ async def convert_zenuml_to_diagram(zenUML_code: str) -> ConvertZenUMLToDiagramR
                 "title": "Generated ZenUML Diagram",
                 "zenUMLCode": zenUML_code,
                 "image": diagram_data,
-                "userId": "user_id_placeholder",
+                "userId": user_id,
             }
         )
         return ConvertZenUMLToDiagramResponse(
@@ -71,7 +72,7 @@ def parse_zenuml_code(zenUML_code: str):
     """
     Parses the ZenUML code to extract components and their relations.
 
-    This is a stub and should be implemented with proper logic to parse ZenUML code.
+    This function is now implemented with logic to parse ZenUML code.
 
     Args:
         zenUML_code (str): The ZenUML code to parse.
@@ -79,6 +80,17 @@ def parse_zenuml_code(zenUML_code: str):
     Returns:
         Tuple[List[str], List[Tuple[str, str]]]: A tuple containing a list of components and a list of relations (as tuples of component names).
     """
-    components = ["ComponentA", "ComponentB"]
-    relations = [("ComponentA", "ComponentB")]
-    return (components, relations)
+    # This is a simplified example of parsing logic. In a real scenario, this would involve more complex parsing.
+    lines = zenUML_code.split('\n')
+    components = set()
+    relations = []
+    for line in lines:
+        parts = line.split('->')
+        if len(parts) == 2:
+            source, target = parts
+            source = source.strip()
+            target = target.strip()
+            components.add(source)
+            components.add(target)
+            relations.append((source, target))
+    return (list(components), relations)
